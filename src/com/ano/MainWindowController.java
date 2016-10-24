@@ -4,6 +4,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -39,11 +40,6 @@ public class MainWindowController implements Initializable{
         folderList.getItems().addAll(inbox,outbox,spam);
         mailList.setCellFactory(param -> new MailListCell());
     }
-
-    void loadmore () {
-        count++;
-
-    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         updateList();
@@ -67,13 +63,14 @@ public class MainWindowController implements Initializable{
             inbox.open(Folder.READ_WRITE);
             ObservableList<Mail> list = FXCollections.observableArrayList();
             //получаем последнее сообщение (самое старое будет под номером 1)
-            for (int i = inbox.getMessageCount(); i > inbox.getMessageCount()-21; i--) {
+            for (int i = inbox.getMessageCount(); i > inbox.getMessageCount()-16; i--) {
                 Message m = inbox.getMessage(i);
                 Address[] from = m.getFrom();
                 String fromstr = from[0].toString();
                 fromstr = MimeUtility.decodeText(fromstr);
                 String text = m.getSubject();
                 text=MailUtils.cutSubject(text);
+                store.isConnected();
                 boolean seen;
                 if (m.isSet(Flags.Flag.SEEN)) {
                     seen=true;
@@ -98,6 +95,30 @@ public class MainWindowController implements Initializable{
                             engine.loadContent((String)bp.getContent());
                         }
                     } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+            loadMore.setOnAction(new EventHandler<javafx.event.ActionEvent>() {
+                @Override
+                public void handle(javafx.event.ActionEvent event) {
+                    try {
+                        count++;
+                        for (int i = inbox.getMessageCount()-count*15; i > inbox.getMessageCount()-16-count*15; i--) {
+                            Message m = inbox.getMessage(i);
+                            Address[] from = m.getFrom();
+                            String fromstr = from[0].toString();
+                            fromstr = MimeUtility.decodeText(fromstr);
+                            String text = m.getSubject();
+                            text = MailUtils.cutSubject(text);
+                            boolean seen;
+                            if (m.isSet(Flags.Flag.SEEN)) {
+                                seen = true;
+                            } else seen = false;
+                            Mail mail = new Mail(fromstr, text, i, seen);
+                            list.add(mail);
+                        }
+                    }catch (Exception e){
                         e.printStackTrace();
                     }
                 }
