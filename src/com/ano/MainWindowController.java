@@ -13,6 +13,7 @@ import javafx.scene.control.ScrollBar;
 import javafx.scene.image.Image;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import sun.misc.ThreadGroupUtils;
 
 import javax.mail.*;
 import javax.mail.internet.MimeUtility;
@@ -47,7 +48,7 @@ public class MainWindowController implements Initializable{
         String address = "anomind@ya.ru";
         String[] temp =address.split("@");
         String imap = "imap."+temp[1];
-        String pass = "222222";
+        String pass = "333";
         Properties props = new Properties();
         //включение debug-режима
         props.put("mail.debug", "true");
@@ -62,25 +63,41 @@ public class MainWindowController implements Initializable{
             //открываем её только для чтения
             inbox.open(Folder.READ_WRITE);
             ObservableList<Mail> list = FXCollections.observableArrayList();
-            //получаем последнее сообщение (самое старое будет под номером 1)
+            FetchProfile fetchProfile = new FetchProfile();
+            fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
+
+
             for (int i = inbox.getMessageCount(); i > inbox.getMessageCount()-16; i--) {
-                Message m = inbox.getMessage(i);
-                Address[] from = m.getFrom();
-                String fromstr = from[0].toString();
-                fromstr = MimeUtility.decodeText(fromstr);
-                String text = m.getSubject();
-                text=MailUtils.cutSubject(text);
-                store.isConnected();
-                boolean seen;
-                if (m.isSet(Flags.Flag.SEEN)) {
-                    seen=true;
-                }
-                else seen=false;
-                Mail mail = new Mail(fromstr, text, i, seen);
-                list.add(mail);
+                int in =i;
+                Thread t = new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        try {
+                            Message m = inbox.getMessage(in);
+                            Address[] from = m.getFrom();
+                            String fromstr = from[0].toString();
+                            fromstr = MimeUtility.decodeText(fromstr);
+                            String text = m.getSubject();
+                            text=MailUtils.cutSubject(text);
+                            store.isConnected();
+                            boolean seen;
+                            if (m.isSet(Flags.Flag.SEEN)) {
+                                seen=true;
+                            }
+                            else seen=false;
+                            Mail mail = new Mail(fromstr, text, in, seen);
+                            list.add(mail);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+
+                    }
+                };
+                t.run();
             }
             mailList.setItems(list);
-
+            //LISTENERS
             mailList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Mail>() {
                 @Override
                 public void changed(ObservableValue <?extends Mail> observable, Mail oldValue, Mail newValue) {
@@ -106,26 +123,37 @@ public class MainWindowController implements Initializable{
                     try {
                         count++;
                         for (int i = inbox.getMessageCount()-count*15; i > inbox.getMessageCount()-16-count*15; i--) {
-                            Message m = inbox.getMessage(i);
-                            Address[] from = m.getFrom();
-                            String fromstr = from[0].toString();
-                            fromstr = MimeUtility.decodeText(fromstr);
-                            String text = m.getSubject();
-                            text = MailUtils.cutSubject(text);
-                            boolean seen;
-                            if (m.isSet(Flags.Flag.SEEN)) {
-                                seen = true;
-                            } else seen = false;
-                            Mail mail = new Mail(fromstr, text, i, seen);
-                            list.add(mail);
+                            int in=i;
+                            Thread s = new Thread(){
+                                @Override
+                                public void run() {
+                                    super.run();
+                                    try {
+                                        Message m = inbox.getMessage(in);
+                                        Address[] from = m.getFrom();
+                                        String fromstr = from[0].toString();
+                                        fromstr = MimeUtility.decodeText(fromstr);
+                                        String text = m.getSubject();
+                                        text = MailUtils.cutSubject(text);
+                                        boolean seen;
+                                        if (m.isSet(Flags.Flag.SEEN)) {
+                                            seen = true;
+                                        } else seen = false;
+                                        Mail mail = new Mail(fromstr, text, in, seen);
+                                        list.add(mail);
+                                    }catch (Exception e){
+                                        e.printStackTrace();
+                                    }
+                                }
+                            };
+                            s.run();
+
                         }
                     }catch (Exception e){
                         e.printStackTrace();
                     }
                 }
             });
-
-            //store.close();
         }catch (Exception e) {
             e.printStackTrace();
         }
