@@ -11,16 +11,24 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollBar;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import sun.misc.ThreadGroupUtils;
 
 import javax.mail.*;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.prefs.Preferences;
 
 /**
  * Created by ano on 02.10.16.
@@ -28,27 +36,36 @@ import java.util.ResourceBundle;
 public class MainWindowController implements Initializable{
     @FXML
     public ListView mailList;
-    public ListView folderList;
     public WebView webBrowser;
     public Button loadMore;
+    public Button inboxButton;
+    public Button outboxButton;
+    public Button newMailButton;
+    public Button settingsButton;
+
 
     int count =0;
     void updateList () {
-        MenuList inbox = new MenuList("Inbox", new Image("com/ano/inbox.png"));
-        MenuList outbox = new MenuList("Outbox", new Image("com/ano/outbox.png"));
-        MenuList spam = new MenuList("Spam", new Image("com/ano/spam.png"));
-        folderList.setCellFactory(param -> new MenuListCell());
-        folderList.getItems().addAll(inbox,outbox,spam);
         mailList.setCellFactory(param -> new MailListCell());
+        ImageView inboxView = new ImageView("com/ano/inbox.png");
+        inboxView.setFitWidth(32); inboxView.setFitHeight(32);
+        inboxButton.setGraphic(inboxView);
+        ImageView outboxView = new ImageView("com/ano/outbox.png");
+        outboxView.setFitWidth(32); outboxView.setFitHeight(32);
+        outboxButton.setGraphic(outboxView);
+        newMailButton.setGraphic(new ImageView("com/ano/newmail.png"));
+        settingsButton.setGraphic(new ImageView("com/ano/settings.png"));
+
     }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         updateList();
         WebEngine engine =webBrowser.getEngine();
-        String address = "anomind@ya.ru";
-        String[] temp =address.split("@");
-        String imap = "imap."+temp[1];
-        String pass = "333";
+        Preferences preferences = Preferences.userNodeForPackage(Main.class);
+
+        String address = preferences.get("login","1");
+        String imap = preferences.get("imap","1");
+        String pass = preferences.get("password","1");
         Properties props = new Properties();
         //включение debug-режима
         props.put("mail.debug", "true");
@@ -65,8 +82,6 @@ public class MainWindowController implements Initializable{
             ObservableList<Mail> list = FXCollections.observableArrayList();
             FetchProfile fetchProfile = new FetchProfile();
             fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
-
-
             for (int i = inbox.getMessageCount(); i > inbox.getMessageCount()-16; i--) {
                 int in =i;
                 Thread t = new Thread(){
@@ -91,7 +106,6 @@ public class MainWindowController implements Initializable{
                         } catch (Exception e){
                             e.printStackTrace();
                         }
-
                     }
                 };
                 t.run();
@@ -108,9 +122,16 @@ public class MainWindowController implements Initializable{
                         if (message.getContentType().contains("text"))
                         engine.loadContent((String)message.getContent());
                         if (message.getContentType().contains("ultipart")){
-                            Multipart mp = (Multipart) message.getContent();
-                            BodyPart bp = mp.getBodyPart(mp.getCount()-1);
-                            engine.loadContent((String)bp.getContent());
+                            MimeMultipart mp = (MimeMultipart) message.getContent();
+                            for (int i = 0; i<mp.getCount(); i++) {
+                                MimeBodyPart bp = (MimeBodyPart) mp.getBodyPart(i);
+                                if (bp.getContentType().contains("text/html")) {
+                                    engine.loadContent((String) bp.getContent());
+                                }
+                                if (bp.getContentType().contains("application")) {
+                                    bp.saveFile("/home/ano/recieve/" + bp.getFileName());
+                                }
+                            }
                         }
                     } catch (Exception e){
                         e.printStackTrace();

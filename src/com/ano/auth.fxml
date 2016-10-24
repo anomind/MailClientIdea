@@ -37,7 +37,6 @@
                         <PasswordField fx:id="passwordField" prefWidth="250.0" />
                      </children>
                   </HBox>
-                  <CheckBox fx:id="rememberCheckBox" mnemonicParsing="false" text="Запомнить меня" />
                   <Label fx:id="errLabel" text="Ошибка! Проверьте правильность данных" textAlignment="CENTER" visible="false">
                      <VBox.margin>
                         <Insets top="10.0" />
