@@ -4,28 +4,22 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import sun.misc.ThreadGroupUtils;
-
 import javax.mail.*;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimeUtility;
-import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
+import java.io.IOException;
 import java.net.URL;
-import java.util.Base64;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
@@ -42,6 +36,7 @@ public class MainWindowController implements Initializable{
     public Button outboxButton;
     public Button newMailButton;
     public Button settingsButton;
+    public Button attachmentsButton;
 
 
     int count =0;
@@ -72,12 +67,10 @@ public class MainWindowController implements Initializable{
         //Указываем протокол - IMAP с SSL
         props.put("mail.store.protocol", "imaps");
         Session session = Session.getInstance(props);
-        //подключаемся к почтовому серверу
         try {
             Store store = session.getStore();
             store.connect(imap, address, pass);
             Folder inbox = store.getFolder("INBOX");
-            //открываем её только для чтения
             inbox.open(Folder.READ_WRITE);
             ObservableList<Mail> list = FXCollections.observableArrayList();
             FetchProfile fetchProfile = new FetchProfile();
@@ -129,8 +122,13 @@ public class MainWindowController implements Initializable{
                                     engine.loadContent((String) bp.getContent());
                                 }
                                 if (bp.getContentType().contains("application")) {
-                                    bp.saveFile("/home/ano/recieve/" + bp.getFileName());
-                                }
+                                    attachmentsButton.setVisible(true);
+                                    new File("/tmp/"+newValue.getCount()).mkdirs();
+                                    bp.saveFile("/tmp/"+newValue.getCount()+"/"+bp.getFileName());
+                                    String dir = "/tmp/"+newValue.getCount();
+                                    props.put("attachdir", dir);
+                                } else attachmentsButton.setVisible(false);
+
                             }
                         }
                     } catch (Exception e){
@@ -171,6 +169,16 @@ public class MainWindowController implements Initializable{
 
                         }
                     }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+            attachmentsButton.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    try {
+                        Runtime.getRuntime().exec("nautilus "+props.getProperty("attachdir"));
+                    }catch (IOException e){
                         e.printStackTrace();
                     }
                 }

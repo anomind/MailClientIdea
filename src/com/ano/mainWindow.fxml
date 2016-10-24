@@ -6,6 +6,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.web.WebView?>
 
+<?import javafx.scene.layout.Region?>
 <HBox prefHeight="600.0" prefWidth="1000" xmlns="http://javafx.com/javafx/8.0.102-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ano.MainWindowController">
          <children>
             <VBox minWidth="50" prefWidth="50.0">
@@ -22,6 +23,17 @@
                    <Button fx:id="loadMore" minHeight="26" prefWidth="300" text="Загрузить больше" />
                </children>
             </VBox>
-            <WebView fx:id="webBrowser" prefWidth="2000.0" />
+             <VBox prefWidth="2000">
+                     <children>
+                         <WebView fx:id="webBrowser" prefWidth="2000.0" prefHeight="2000"/>
+                         <HBox fillHeight="true">
+                             <children>
+                                 <Button fx:id="attachmentsButton" visible="false" text="Просмотреть вложения"/>
+                                 <Region prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                                 <Button fx:id="replyButton" text="Ответить"/>
+                             </children>
+                         </HBox>
+                     </children>
+             </VBox>
          </children>
       </HBox>
