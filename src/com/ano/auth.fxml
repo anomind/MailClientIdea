@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<GridPane alignment="center" hgap="10.0" minHeight="-Infinity" minWidth="-Infinity" vgap="10" xmlns="http://javafx.com/javafx/8.0.102-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ano.AuthController">
+   <columnConstraints>
+      <ColumnConstraints />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+   </rowConstraints>
+   <children>
+      <BorderPane prefHeight="200.0" prefWidth="300.0">
+         <center>
+            <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+               <children>
+                  <HBox prefHeight="50.0" prefWidth="200.0">
+                     <children>
+                        <Label minWidth="65.0" text="Адрес:" />
+                        <TextField fx:id="emailField" prefWidth="250.0" />
+                     </children>
+                  </HBox>
+                  <HBox prefHeight="50.0" prefWidth="200.0">
+                     <children>
+                        <Label minWidth="65.0" text="Пароль:" />
+                        <PasswordField fx:id="passwordField" prefWidth="250.0" />
+                     </children>
+                  </HBox>
+                  <CheckBox fx:id="rememberCheckBox" mnemonicParsing="false" text="Запомнить меня" />
+                  <Label fx:id="errLabel" text="Ошибка! Проверьте правильность данных" textAlignment="CENTER" visible="false">
+                     <VBox.margin>
+                        <Insets top="10.0" />
+                     </VBox.margin></Label>
+               </children>
+            </VBox>
+         </center>
+         <bottom>
+            <Button fx:id="loginButton" mnemonicParsing="false" onAction="#onLoginButtonClick" prefWidth="Infinity" text="Войти" BorderPane.alignment="CENTER">
+               <BorderPane.margin>
+                  <Insets top="10.0" />
+               </BorderPane.margin></Button>
+         </bottom></BorderPane>
+   </children>
+</GridPane>
