@@ -47,7 +47,7 @@ public class MainWindowController implements Initializable{
         String address = "anomind@ya.ru";
         String[] temp =address.split("@");
         String imap = "imap."+temp[1];
-        String pass = "1splash1";
+        String pass = "222222";
         Properties props = new Properties();
         //включение debug-режима
         props.put("mail.debug", "true");
@@ -87,6 +87,7 @@ public class MainWindowController implements Initializable{
                     try {
                         Message message = inbox.getMessage(newValue.getCount());
                         message.setFlag(Flags.Flag.SEEN,true);
+
                         if (message.getContentType().contains("text"))
                         engine.loadContent((String)message.getContent());
                         if (message.getContentType().contains("ultipart")){
