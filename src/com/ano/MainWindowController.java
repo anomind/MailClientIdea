@@ -132,6 +132,11 @@ public class MainWindowController implements Initializable{
                             MimeMultipart mp = (MimeMultipart) message.getContent();
                             for (int i = 0; i<mp.getCount(); i++) {
                                 MimeBodyPart bp = (MimeBodyPart) mp.getBodyPart(i);
+                                engine.loadContent("<style>" +
+                                        "body {\n" +
+                                        "    background-image: url(https://raw.githubusercontent.com/anomind/MailClientIdea/master/src/com/ano/at.png); /* Путь к фоновому изображению */\n"+
+                                        "   }\n" +
+                                        "  </style>");
                                 if (bp.getContentType().contains("text/html")) {
                                     engine.loadContent((String) bp.getContent());
                                 }
