@@ -28,7 +28,8 @@ public class MailListCell extends ListCell <Mail>{
                 from.setFont(Font.font("Verdana",FontWeight.BOLD, 14));
             }
             ImageView icon =new ImageView("com/ano/icon.png");
-            icon.setFitHeight(32); icon.setFitWidth(32);
+            icon.setStyle("-fx-background-color: #004d40");
+            icon.setFitHeight(40); icon.setFitWidth(40);
             setGraphic(new HBox(icon, new VBox(from,text)));
         }
     }

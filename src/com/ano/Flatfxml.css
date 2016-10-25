@@ -12,6 +12,7 @@
     -fx-border-radius: 0;
 }
 
+
 /* The main scrollbar **track** CSS class  */
 .list-view .scroll-bar:horizontal .track, .list-view .scroll-bar:vertical .track{
     -fx-background-color:transparent;
