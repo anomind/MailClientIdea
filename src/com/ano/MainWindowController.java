@@ -1,5 +1,6 @@
 package com.ano;
 
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -10,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.image.ImageView;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -37,6 +39,7 @@ public class MainWindowController implements Initializable{
     public Button newMailButton;
     public Button settingsButton;
     public Button attachmentsButton;
+    private ProgressIndicator indicator = new ProgressIndicator();
 
 
     int count =0;
@@ -50,12 +53,20 @@ public class MainWindowController implements Initializable{
         outboxButton.setGraphic(outboxView);
         newMailButton.setGraphic(new ImageView("com/ano/newmail.png"));
         settingsButton.setGraphic(new ImageView("com/ano/settings.png"));
+        indicator.setVisible(false);
+        indicator.setStyle("-fx-progress-color: white");
+        indicator.setMaxSize(25,25);
+        loadMore.setGraphic(indicator);
 
     }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         updateList();
         WebEngine engine =webBrowser.getEngine();
+        engine.loadContent("   body {\n" +
+                "    background-image: url(images/bg.jpg); /* Путь к фоновому изображению */\n"+
+                "   }\n" +
+                "  </style>");
         Preferences preferences = Preferences.userNodeForPackage(Main.class);
 
         String address = preferences.get("login","1");
@@ -86,6 +97,8 @@ public class MainWindowController implements Initializable{
                             Address[] from = m.getFrom();
                             String fromstr = from[0].toString();
                             fromstr = MimeUtility.decodeText(fromstr);
+                            String temp[] = fromstr.split("<");
+                            fromstr=temp[0];
                             String text = m.getSubject();
                             text=MailUtils.cutSubject(text);
                             store.isConnected();
@@ -101,7 +114,7 @@ public class MainWindowController implements Initializable{
                         }
                     }
                 };
-                t.run();
+                t.start();
             }
             mailList.setItems(list);
             //LISTENERS
@@ -121,14 +134,26 @@ public class MainWindowController implements Initializable{
                                 if (bp.getContentType().contains("text/html")) {
                                     engine.loadContent((String) bp.getContent());
                                 }
+                                if (!bp.getContentType().contains("application"))
+                                    attachmentsButton.setVisible(false);
                                 if (bp.getContentType().contains("application")) {
                                     attachmentsButton.setVisible(true);
-                                    new File("/tmp/"+newValue.getCount()).mkdirs();
-                                    bp.saveFile("/tmp/"+newValue.getCount()+"/"+bp.getFileName());
-                                    String dir = "/tmp/"+newValue.getCount();
-                                    props.put("attachdir", dir);
-                                } else attachmentsButton.setVisible(false);
-
+                                    Thread thread = new Thread(){
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                super.run();
+                                                new File("/tmp/"+newValue.getCount()).mkdirs();
+                                                bp.saveFile("/tmp/"+newValue.getCount()+"/"+bp.getFileName());
+                                                String dir = "/tmp/"+newValue.getCount();
+                                                props.put("attachdir", dir);
+                                            } catch (Exception e){
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    };
+                                    thread.start();
+                                }
                             }
                         }
                     } catch (Exception e){
@@ -139,38 +164,36 @@ public class MainWindowController implements Initializable{
             loadMore.setOnAction(new EventHandler<javafx.event.ActionEvent>() {
                 @Override
                 public void handle(javafx.event.ActionEvent event) {
-                    try {
                         count++;
-                        for (int i = inbox.getMessageCount()-count*15; i > inbox.getMessageCount()-16-count*15; i--) {
-                            int in=i;
                             Thread s = new Thread(){
                                 @Override
                                 public void run() {
                                     super.run();
                                     try {
-                                        Message m = inbox.getMessage(in);
-                                        Address[] from = m.getFrom();
-                                        String fromstr = from[0].toString();
-                                        fromstr = MimeUtility.decodeText(fromstr);
-                                        String text = m.getSubject();
-                                        text = MailUtils.cutSubject(text);
-                                        boolean seen;
-                                        if (m.isSet(Flags.Flag.SEEN)) {
-                                            seen = true;
-                                        } else seen = false;
-                                        Mail mail = new Mail(fromstr, text, in, seen);
-                                        list.add(mail);
+                                        Platform.runLater(()-> indicator.setVisible(true));
+                                        for (int i = inbox.getMessageCount()-count*15; i > inbox.getMessageCount()-16-count*15; i--) {
+                                            int in=i;
+
+                                            Message m = inbox.getMessage(in);
+                                             Address[] from = m.getFrom();
+                                            String fromstr = from[0].toString();
+                                            fromstr = MimeUtility.decodeText(fromstr);
+                                            String text = m.getSubject();
+                                            text = MailUtils.cutSubject(text);
+                                            boolean seen;
+                                            if (m.isSet(Flags.Flag.SEEN)) {
+                                                seen = true;
+                                             } else seen = false;
+                                            Mail mail = new Mail(fromstr, text, in, seen);
+                                            list.add(mail);
+                                            }
+                                        Platform.runLater(()-> indicator.setVisible(false));
                                     }catch (Exception e){
                                         e.printStackTrace();
                                     }
                                 }
                             };
-                            s.run();
-
-                        }
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
+                            s.start();
                 }
             });
             attachmentsButton.setOnAction(new EventHandler<ActionEvent>() {
