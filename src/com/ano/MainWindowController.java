@@ -63,8 +63,9 @@ public class MainWindowController implements Initializable{
     public void initialize(URL location, ResourceBundle resources) {
         updateList();
         WebEngine engine =webBrowser.getEngine();
-        engine.loadContent("   body {\n" +
-                "    background-image: url(images/bg.jpg); /* Путь к фоновому изображению */\n"+
+        engine.loadContent("<style>" +
+                "body {\n" +
+                "    background-image: url(https://raw.githubusercontent.com/anomind/MailClientIdea/master/src/com/ano/at.png); /* Путь к фоновому изображению */\n"+
                 "   }\n" +
                 "  </style>");
         Preferences preferences = Preferences.userNodeForPackage(Main.class);
