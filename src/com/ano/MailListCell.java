@@ -29,7 +29,7 @@ public class MailListCell extends ListCell <Mail>{
             }
             ImageView icon =new ImageView("com/ano/icon.png");
             icon.setFitHeight(32); icon.setFitWidth(32);
-            setGraphic(new HBox(icon, new Separator(Orientation.VERTICAL), new VBox(from,text)));
+            setGraphic(new HBox(icon, new VBox(from,text)));
         }
     }
 }

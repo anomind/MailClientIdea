@@ -7,25 +7,25 @@
 <?import javafx.scene.web.WebView?>
 
 <?import javafx.scene.layout.Region?>
-<HBox prefHeight="600.0" prefWidth="1000" xmlns="http://javafx.com/javafx/8.0.102-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ano.MainWindowController">
+<HBox prefHeight="600.0" prefWidth="1000" style="-fx-background-color: #004d40;" xmlns="http://javafx.com/javafx/8.0.102-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ano.MainWindowController">
          <children>
-            <VBox minWidth="50" prefWidth="50.0">
+            <VBox minWidth="50" prefWidth="50.0" style="-fx-background-color: #004d40;">
                     <children>
-                        <Button fx:id="newMailButton" maxWidth="32" maxHeight="32"/>
-                        <Button fx:id="inboxButton" maxWidth="32" maxHeight="32"/>
-                        <Button fx:id="outboxButton" maxWidth="32" maxHeight="32"/>
-                        <Button fx:id="settingsButton" maxWidth="32" maxHeight="32"/>
+                        <Button fx:id="newMailButton" maxWidth="32" maxHeight="32" style="-fx-background-color: #004d40; -fx-background-radius: 0;"/>
+                        <Button fx:id="inboxButton" maxWidth="32" maxHeight="32" style="-fx-background-color: #004d40; -fx-background-radius: 0;"/>
+                        <Button fx:id="outboxButton" maxWidth="32" maxHeight="32" style="-fx-background-color: #004d40; -fx-background-radius: 0;"/>
+                        <Button fx:id="settingsButton" maxWidth="32" maxHeight="32" style="-fx-background-color: #004d40; -fx-background-radius: 0;"/>
                     </children>
              </VBox>
             <VBox minWidth="300" prefHeight="2000" prefWidth="300.0">
                <children>
-                  <ListView fx:id="mailList" minHeight="400.0" prefHeight="2000.0" />
-                   <Button fx:id="loadMore" minHeight="26" prefWidth="300" text="Загрузить больше" />
+                  <ListView fx:id="mailList" minHeight="400.0" prefHeight="2000.0" stylesheets="@Flatfxml.css"/>
+                   <Button fx:id="loadMore" minHeight="26" prefWidth="300" text="Загрузить больше" style="-fx-background-color: #004d40; -fx-background-radius: 0; -fx-text-fill: white;"/>
                </children>
             </VBox>
              <VBox prefWidth="2000">
                      <children>
-                         <WebView fx:id="webBrowser" prefWidth="2000.0" prefHeight="2000"/>
+                         <WebView fx:id="webBrowser" prefWidth="2000.0" prefHeight="2000" style="-fx-background-color: #004d40;"/>
                          <HBox fillHeight="true">
                              <children>
                                  <Button fx:id="attachmentsButton" visible="false" text="Просмотреть вложения"/>
