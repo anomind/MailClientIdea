@@ -87,36 +87,37 @@ public class MainWindowController implements Initializable{
             ObservableList<Mail> list = FXCollections.observableArrayList();
             FetchProfile fetchProfile = new FetchProfile();
             fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
-            for (int i = inbox.getMessageCount(); i > inbox.getMessageCount()-16; i--) {
-                int in =i;
+
                 Thread t = new Thread(){
                     @Override
                     public void run() {
                         super.run();
                         try {
-                            Message m = inbox.getMessage(in);
-                            Address[] from = m.getFrom();
-                            String fromstr = from[0].toString();
-                            fromstr = MimeUtility.decodeText(fromstr);
-                            String temp[] = fromstr.split("<");
-                            fromstr=temp[0];
-                            String text = m.getSubject();
-                            text=MailUtils.cutSubject(text);
-                            store.isConnected();
-                            boolean seen;
-                            if (m.isSet(Flags.Flag.SEEN)) {
-                                seen=true;
+                            for (int i = inbox.getMessageCount(); i > inbox.getMessageCount()-16; i--) {
+                                int in = i;
+                                Message m = inbox.getMessage(in);
+                                Address[] from = m.getFrom();
+                                String fromstr = from[0].toString();
+                                fromstr = MimeUtility.decodeText(fromstr);
+                                String temp[] = fromstr.split("<");
+                                fromstr = temp[0];
+                                String text = m.getSubject();
+                                text = MailUtils.cutSubject(text);
+                                store.isConnected();
+                                boolean seen;
+                                if (m.isSet(Flags.Flag.SEEN)) {
+                                    seen = true;
+                                } else seen = false;
+                                Mail mail = new Mail(fromstr, text, in, seen);
+                                list.add(mail);
                             }
-                            else seen=false;
-                            Mail mail = new Mail(fromstr, text, in, seen);
-                            list.add(mail);
                         } catch (Exception e){
                             e.printStackTrace();
                         }
                     }
                 };
                 t.start();
-            }
+
             mailList.setItems(list);
             //LISTENERS
             mailList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Mail>() {
@@ -130,13 +131,13 @@ public class MainWindowController implements Initializable{
                         engine.loadContent((String)message.getContent());
                         if (message.getContentType().contains("ultipart")){
                             MimeMultipart mp = (MimeMultipart) message.getContent();
+                            engine.loadContent("<style>" +
+                                    "body {\n" +
+                                    "    background-image: url(https://raw.githubusercontent.com/anomind/MailClientIdea/master/src/com/ano/at.png); /* Путь к фоновому изображению */\n"+
+                                    "   }\n" +
+                                    "  </style>");
                             for (int i = 0; i<mp.getCount(); i++) {
                                 MimeBodyPart bp = (MimeBodyPart) mp.getBodyPart(i);
-                                engine.loadContent("<style>" +
-                                        "body {\n" +
-                                        "    background-image: url(https://raw.githubusercontent.com/anomind/MailClientIdea/master/src/com/ano/at.png); /* Путь к фоновому изображению */\n"+
-                                        "   }\n" +
-                                        "  </style>");
                                 if (bp.getContentType().contains("text/html")) {
                                     engine.loadContent((String) bp.getContent());
                                 }
