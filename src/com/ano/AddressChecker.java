@@ -11,7 +11,6 @@ public class AddressChecker {
     public static boolean checkAddress(String address){
         if (!address.contains("@")) return false;
         if (!address.contains(".")) return false;
-        if (address.contains(" ")) return false;
-        return true;
+        return !address.contains(" ");
     }
 }

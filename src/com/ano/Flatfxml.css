@@ -94,3 +94,8 @@
 
 }
 
+
+.progress-bar:indeterminate > .track {
+    -fx-background-color:#004d40;
+    -fx-control-inner-background:#004d40;
+}

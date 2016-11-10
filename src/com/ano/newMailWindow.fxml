@@ -1,0 +1,3 @@
+<?import javafx.scene.layout.HBox?>
+<HBox prefHeight="600.0" prefWidth="1000" style="-fx-background-color: #004d40;" xmlns="http://javafx.com/javafx/8.0.102-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ano.NewMailWindowController" stylesheets="Flatfxml.css">
+    </HBox>

@@ -85,8 +85,8 @@ public class MainWindowController implements Initializable{
             Folder inbox = store.getFolder("INBOX");
             inbox.open(Folder.READ_WRITE);
             ObservableList<Mail> list = FXCollections.observableArrayList();
-            FetchProfile fetchProfile = new FetchProfile();
-            fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
+           // FetchProfile fetchProfile = new FetchProfile();
+           // fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
 
                 Thread t = new Thread(){
                     @Override
@@ -94,8 +94,7 @@ public class MainWindowController implements Initializable{
                         super.run();
                         try {
                             for (int i = inbox.getMessageCount(); i > inbox.getMessageCount()-16; i--) {
-                                int in = i;
-                                Message m = inbox.getMessage(in);
+                                Message m = inbox.getMessage(i);
                                 Address[] from = m.getFrom();
                                 String fromstr = from[0].toString();
                                 fromstr = MimeUtility.decodeText(fromstr);
@@ -103,12 +102,10 @@ public class MainWindowController implements Initializable{
                                 fromstr = temp[0];
                                 String text = m.getSubject();
                                 text = MailUtils.cutSubject(text);
-                                store.isConnected();
+                                //store.isConnected();
                                 boolean seen;
-                                if (m.isSet(Flags.Flag.SEEN)) {
-                                    seen = true;
-                                } else seen = false;
-                                Mail mail = new Mail(fromstr, text, in, seen);
+                                seen = m.isSet(Flags.Flag.SEEN);
+                                Mail mail = new Mail(fromstr, text, i, seen);
                                 list.add(mail);
                             }
                         } catch (Exception e){
@@ -126,7 +123,6 @@ public class MainWindowController implements Initializable{
                     try {
                         Message message = inbox.getMessage(newValue.getCount());
                         message.setFlag(Flags.Flag.SEEN,true);
-
                         if (message.getContentType().contains("text"))
                         engine.loadContent((String)message.getContent());
                         if (message.getContentType().contains("ultipart")){
@@ -179,19 +175,16 @@ public class MainWindowController implements Initializable{
                                     try {
                                         Platform.runLater(()-> indicator.setVisible(true));
                                         for (int i = inbox.getMessageCount()-count*15; i > inbox.getMessageCount()-16-count*15; i--) {
-                                            int in=i;
 
-                                            Message m = inbox.getMessage(in);
+                                            Message m = inbox.getMessage(i);
                                              Address[] from = m.getFrom();
                                             String fromstr = from[0].toString();
                                             fromstr = MimeUtility.decodeText(fromstr);
                                             String text = m.getSubject();
                                             text = MailUtils.cutSubject(text);
                                             boolean seen;
-                                            if (m.isSet(Flags.Flag.SEEN)) {
-                                                seen = true;
-                                             } else seen = false;
-                                            Mail mail = new Mail(fromstr, text, in, seen);
+                                            seen = m.isSet(Flags.Flag.SEEN);
+                                            Mail mail = new Mail(fromstr, text, i, seen);
                                             list.add(mail);
                                             }
                                         Platform.runLater(()-> indicator.setVisible(false));
@@ -209,6 +202,16 @@ public class MainWindowController implements Initializable{
                     try {
                         Runtime.getRuntime().exec("nautilus "+props.getProperty("attachdir"));
                     }catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+            newMailButton.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    try {
+                        new NewMailWindow();
+                    }catch (Exception e){
                         e.printStackTrace();
                     }
                 }

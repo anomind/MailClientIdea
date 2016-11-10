@@ -7,6 +7,7 @@
 <?import javafx.scene.web.WebView?>
 
 <?import javafx.scene.layout.Region?>
+
 <HBox prefHeight="600.0" prefWidth="1000" style="-fx-background-color: #004d40;" xmlns="http://javafx.com/javafx/8.0.102-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.ano.MainWindowController" stylesheets="Flatfxml.css">
          <children>
             <VBox minWidth="50" prefWidth="50.0" style="-fx-background-color: #004d40;">
@@ -29,7 +30,8 @@
                          <HBox fillHeight="true">
                              <children>
                                  <Button fx:id="attachmentsButton" visible="false" text="Просмотреть вложения" style="-fx-background-color: #004d40; -fx-background-radius: 0; -fx-text-fill: white;"/>
-                                 <Region prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                                    <Region prefWidth="150.0" HBox.hgrow="ALWAYS" />
+                                 <!--ProgressBar fx:id="bar" prefWidth="200" HBox.hgrow="ALWAYS" stylesheets="@Flatfxml.css"/-->
                                  <Button fx:id="replyButton" text="Ответить" style="-fx-background-color: #004d40; -fx-background-radius: 0; -fx-text-fill: white;"/>
                              </children>
                          </HBox>
