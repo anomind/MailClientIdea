@@ -157,6 +157,7 @@ public class MainWindowController implements Initializable{
                                     };
                                     thread.start();
                                 }
+                                engine.loadContent(MailUtils.getText(message));
                             }
                         }
                     } catch (Exception e){
