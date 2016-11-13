@@ -3,6 +3,7 @@ package com.ano;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
@@ -13,10 +14,10 @@ public class NewMailWindow {
 
     public NewMailWindow () throws  Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("newMailWindow.fxml"));
-        HBox load = loader.load();
+        VBox load = loader.load();
         Stage stage = new Stage();
-        stage.setTitle("Mail");
-        Scene scene = new Scene(load,1000,600);
+        stage.setTitle("Новое сообщение");
+        Scene scene = new Scene(load,750,500);
         stage.setScene(scene);
         stage.show();
     }
