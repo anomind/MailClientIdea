@@ -139,17 +139,20 @@ public class MainWindowController implements Initializable{
                                 }
                                 if (!bp.getContentType().contains("application"))
                                     attachmentsButton.setVisible(false);
-                                if (bp.getContentType().contains("application")) {
+                                if ((bp.getContentType().contains("application")||bp.getContentType().contains("image"))
+                                        &&bp.getDisposition().equalsIgnoreCase("attachment")) {
                                     attachmentsButton.setVisible(true);
                                     Thread thread = new Thread(){
                                         @Override
                                         public void run() {
                                             try {
-                                                super.run();
-                                                new File("/tmp/"+newValue.getCount()).mkdirs();
-                                                bp.saveFile("/tmp/"+newValue.getCount()+"/"+bp.getFileName());
-                                                String dir = "/tmp/"+newValue.getCount();
-                                                props.put("attachdir", dir);
+                                                if (!bp.getFileName().isEmpty()) {
+                                                    super.run();
+                                                    new File("/tmp/" + newValue.getCount()).mkdirs();
+                                                    bp.saveFile("/tmp/" + newValue.getCount() + "/" + bp.getFileName());
+                                                    String dir = "/tmp/" + newValue.getCount();
+                                                    props.put("attachdir", dir);
+                                                }
                                             } catch (Exception e){
                                                 e.printStackTrace();
                                             }
@@ -181,6 +184,7 @@ public class MainWindowController implements Initializable{
                                              Address[] from = m.getFrom();
                                             String fromstr = from[0].toString();
                                             fromstr = MimeUtility.decodeText(fromstr);
+                                            fromstr = fromstr.split("<")[0];
                                             String text = m.getSubject();
                                             text = MailUtils.cutSubject(text);
                                             boolean seen;
