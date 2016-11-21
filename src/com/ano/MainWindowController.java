@@ -9,9 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
@@ -22,6 +20,7 @@ import javax.mail.internet.MimeUtility;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
@@ -39,10 +38,12 @@ public class MainWindowController implements Initializable{
     public Button newMailButton;
     public Button settingsButton;
     public Button attachmentsButton;
+    public Button replyButton;
     private ProgressIndicator indicator = new ProgressIndicator();
 
 
     int count =0;
+    boolean isOutbox = false;
     void updateList () {
         mailList.setCellFactory(param -> new MailListCell());
         ImageView inboxView = new ImageView("com/ano/inbox.png");
@@ -52,7 +53,7 @@ public class MainWindowController implements Initializable{
         outboxView.setFitWidth(32); outboxView.setFitHeight(32);
         outboxButton.setGraphic(outboxView);
         newMailButton.setGraphic(new ImageView("com/ano/newmail.png"));
-        settingsButton.setGraphic(new ImageView("com/ano/settings.png"));
+        settingsButton.setGraphic(new ImageView("com/ano/delete.png"));
         indicator.setVisible(false);
         indicator.setStyle("-fx-progress-color: white");
         indicator.setMaxSize(25,25);
@@ -69,7 +70,10 @@ public class MainWindowController implements Initializable{
                 "   }\n" +
                 "  </style>");
         Preferences preferences = Preferences.userNodeForPackage(Main.class);
-
+        preferences.put("mesSub","1");
+        preferences.put("mesRep","1");
+        preferences.put("message","-1");
+        preferences.putInt("listIndex",-1);
         String address = preferences.get("login","1");
         String imap = preferences.get("imap","1");
         String pass = preferences.get("password","1");
@@ -84,6 +88,8 @@ public class MainWindowController implements Initializable{
             store.connect(imap, address, pass);
             Folder inbox = store.getFolder("INBOX");
             inbox.open(Folder.READ_WRITE);
+            Folder outbox = store.getFolder("Отправленные");
+            outbox.open(Folder.READ_WRITE);
             ObservableList<Mail> list = FXCollections.observableArrayList();
            // FetchProfile fetchProfile = new FetchProfile();
            // fetchProfile.add(FetchProfile.Item.CONTENT_INFO);
@@ -121,8 +127,14 @@ public class MainWindowController implements Initializable{
                 @Override
                 public void changed(ObservableValue <?extends Mail> observable, Mail oldValue, Mail newValue) {
                     try {
-                        Message message = inbox.getMessage(newValue.getCount());
+                        Message message;
+                        if (isOutbox)
+                           message = outbox.getMessage(newValue.getCount());
+                        else
+                            message = inbox.getMessage(newValue.getCount());
                         message.setFlag(Flags.Flag.SEEN,true);
+                        preferences.put("message",String.valueOf(message.getMessageNumber()));
+                        preferences.putInt("listIndex",list.indexOf(newValue));
                         if (message.getContentType().contains("text"))
                         engine.loadContent((String)message.getContent());
                         if (message.getContentType().contains("ultipart")){
@@ -215,7 +227,116 @@ public class MainWindowController implements Initializable{
                 @Override
                 public void handle(ActionEvent event) {
                     try {
+                        preferences.put("mesSub","1");
+                        preferences.put("mesRep","1");
                         new NewMailWindow();
+                    }catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+            outboxButton.setOnAction(event -> {
+                Thread out = new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        try {
+                            isOutbox=true;
+                            loadMore.setVisible(false);
+                            list.clear();
+                            for (int i = outbox.getMessageCount(); i > outbox.getMessageCount()-16; i--) {
+                                Message m = outbox.getMessage(i);
+                                Address[] from = m.getRecipients(Message.RecipientType.TO);
+                                String fromstr = from[0].toString();
+                                fromstr = MimeUtility.decodeText(fromstr);
+                                String temp[] = fromstr.split("<");
+                                fromstr = temp[0];
+                                String text = m.getSubject();
+                                text = MailUtils.cutSubject(text);
+                                //store.isConnected();
+                                boolean seen;
+                                seen = m.isSet(Flags.Flag.SEEN);
+                                Mail mail = new Mail(fromstr, text, i, seen);
+                                list.add(mail);
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                out.start();
+            });
+            inboxButton.setOnAction(event -> {
+                Thread in = new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        try {
+                            isOutbox=false;
+                            loadMore.setVisible(true);
+                            list.clear();
+                            count=0;
+                            for (int i = inbox.getMessageCount(); i > inbox.getMessageCount()-16; i--) {
+                                Message m = inbox.getMessage(i);
+                                Address[] from = m.getReplyTo();
+                                String fromstr = from[0].toString();
+                                fromstr = MimeUtility.decodeText(fromstr);
+                                String temp[] = fromstr.split("<");
+                                fromstr = temp[0];
+                                String text = m.getSubject();
+                                text = MailUtils.cutSubject(text);
+                                //store.isConnected();
+                                boolean seen;
+                                seen = m.isSet(Flags.Flag.SEEN);
+                                Mail mail = new Mail(fromstr, text, i, seen);
+                                list.add(mail);
+                            }
+                        }catch (Exception e){
+                         e.printStackTrace();
+                        }
+                    }
+                };
+                in.start();
+            });
+            replyButton.setOnAction(event ->{
+                int mesNumber = Integer.parseInt(preferences.get("message","-1"));
+                try {
+                if (mesNumber>0) {
+                    Message m =inbox.getMessage(mesNumber);
+                    preferences.put("mesSub", m.getSubject());
+                    Address[] from = m.getReplyTo();
+                    String fromstr = from[0].toString();
+                    fromstr = MimeUtility.decodeText(fromstr);
+                    String temp[] = fromstr.split("<");
+                    fromstr = temp[1];
+                    temp=fromstr.split(">");
+                    fromstr = temp[0];
+                    preferences.put("mesRep", fromstr);
+                }
+                    new NewMailWindow();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            });
+            settingsButton.setOnAction(event -> {
+                int mesNumber = Integer.parseInt(preferences.get("message","-1"));
+                if (mesNumber>0){
+                    try {
+                        Message m = inbox.getMessage(mesNumber);
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                        alert.setTitle("Удаление");
+                        alert.setHeaderText("Вы действительно хотите удалить сообщение?");
+                        //alert.setContentText("Are you ok with this?");
+
+                        Optional<ButtonType> result = alert.showAndWait();
+                        if (result.get() == ButtonType.OK) {
+                            // ... user chose OK
+                            m.setFlag(Flags.Flag.DELETED, true);
+                            inbox.close(true);
+                            inbox.open(Folder.READ_WRITE);
+                            list.remove(preferences.getInt("listIndex", -1));
+                        }
+
                     }catch (Exception e){
                         e.printStackTrace();
                     }

@@ -48,15 +48,21 @@ public class NewMailWindowController implements Initializable {
         ConfigLoader.loadProperties("simplejavamail.properties",true); // optional default
         ConfigLoader.loadProperties("overrides.properties",true); // optional extra
         Email email = new Email();
+        String sub = preferences.get("mesSub","1");
+        String to = preferences.get("mesRep","1");
+        if (!(sub.equals("1")||to.equals("1"))){
+            toField.setText(to);
+            themeField.setText(sub);
+        }
 
         addButton.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open Resource File");
             File file = fileChooser.showOpenDialog(new Stage());
             //System.out.println(file.getAbsolutePath());
-            String[] ty = file.getName().split("\\.");
+           // String[] ty = file.getName().split("\\.");
             //System.out.println(ty.length);
-            String type = ty[ty.length-1];
+            //String type = ty[ty.length-1];
             email.addAttachment(file.getAbsolutePath(),new FileDataSource(file.getAbsolutePath()));
         });
 
